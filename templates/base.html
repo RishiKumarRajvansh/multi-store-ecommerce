@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Multi-Store Meat & Seafood{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #e74c3c !important;
+        }
+        
+        .store-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .store-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .store-status.open {
+            color: #28a745;
+        }
+        
+        .store-status.closed {
+            color: #dc3545;
+        }
+        
+        .cart-floating {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 50px;
+        }
+        
+        .zip-entry-hero {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'zip_entry' %}">
+                <i class="fas fa-store me-2"></i>FreshMeat Market
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if request.session.zip_code %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' request.session.zip_code %}">
+                                <i class="fas fa-home me-1"></i>Stores
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>{{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'orders:my_orders' %}">My Orders</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:register' %}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% if request.session.zip_code %}
+                        <li class="nav-item">
+                            <span class="nav-link text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ request.session.zip_code }}
+                            </span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Cart Button -->
+    <div id="cartFloating" class="cart-floating">
+        <button class="btn btn-primary btn-lg rounded-circle" style="width: 60px; height: 60px;">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">
+                0
+            </span>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="text-white">FreshMeat Market</h5>
+                    <p class="text-light">Fresh meat and seafood delivered to your doorstep from local stores.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-white">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">About Us</a></li>
+                        <li><a href="#" class="text-light">Contact</a></li>
+                        <li><a href="#" class="text-light">Privacy Policy</a></li>
+                        <li><a href="#" class="text-light">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-white">Contact Info</h6>
+                    <p class="text-light">
+                        <i class="fas fa-phone me-2"></i>1-800-FRESH-MEAT<br>
+                        <i class="fas fa-envelope me-2"></i>support@freshmeat.com
+                    </p>
+                </div>
+            </div>
+            <hr class="my-4 border-light">
+            <div class="text-center">
+                <p class="text-light mb-0">&copy; 2024 FreshMeat Market. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Cart management
+        let cartItems = {};
+        
+        function updateCartDisplay() {
+            const totalItems = Object.values(cartItems).reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').textContent = totalItems;
+            
+            const cartFloating = document.getElementById('cartFloating');
+            if (totalItems > 0) {
+                cartFloating.style.display = 'block';
+            } else {
+                cartFloating.style.display = 'none';
+            }
+        }
+        
+        // Show loading state
+        function showLoading(element) {
+            element.disabled = true;
+            element.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Loading...';
+        }
+        
+        // Hide loading state
+        function hideLoading(element, originalText) {
+            element.disabled = false;
+            element.innerHTML = originalText;
+        }
+        
+        // Initialize cart display
+        updateCartDisplay();
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

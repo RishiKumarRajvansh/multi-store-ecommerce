@@ -159,32 +159,40 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # Redis Configuration
 REDIS_URL = config('REDIS_URL', default='redis://localhost:6379')
 
-# Caches
+# Caches - temporarily disabled for demo without Redis
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': REDIS_URL,
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
+
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': REDIS_URL,
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
 
-# Channels Configuration
-ASGI_APPLICATION = 'multistore_ecommerce.asgi.application'
+# Channels Configuration - temporarily disabled for demo
+# ASGI_APPLICATION = 'multistore_ecommerce.asgi.application'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [REDIS_URL],
-        },
-    },
-}
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [REDIS_URL],
+#         },
+#     },
+# }
 
-# Session Configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+# Session Configuration - use database instead of Redis for demo
+# SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+# SESSION_CACHE_ALIAS = 'default'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Logging Configuration
 LOGGING = {
