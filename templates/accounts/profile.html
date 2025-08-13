@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - FreshMeat Market{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle mb-3" width="100" height="100">
+                    {% else %}
+                        <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                    {% endif %}
+                    <h5>{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted">{{ user.get_role_display }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Username:</strong> {{ user.username }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>Phone:</strong> {{ user.phone_number|default:"Not provided" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+                            <p><strong>Member since:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+                            <p><strong>Last login:</strong> {{ user.last_login|date:"F d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Account Status</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% if user.is_email_verified %}
+                                    <span class="badge bg-success">Email Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Email Not Verified</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {% if user.is_phone_verified %}
+                                    <span class="badge bg-success">Phone Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Phone Not Verified</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="btn btn-primary me-2">Edit Profile</button>
+                        <button class="btn btn-outline-secondary">Change Password</button>
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.role == 'customer' %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Orders</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">No recent orders found.</p>
+                        <a href="{% url 'orders:my_orders' %}" class="btn btn-outline-primary">View All Orders</a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if user.role == 'store_owner' %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">My Stores</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Manage your stores and view performance.</p>
+                        <a href="{% url 'stores:dashboard' %}" class="btn btn-primary">Store Dashboard</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

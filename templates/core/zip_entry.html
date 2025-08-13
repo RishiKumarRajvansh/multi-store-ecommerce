@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Enter Your ZIP Code - FreshMeat Market{% endblock %}
+
+{% block content %}
+<div class="zip-entry-hero">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h1 class="display-4 fw-bold mb-4">Fresh Meat & Seafood</h1>
+                <p class="lead mb-5">Delivered fresh from local stores to your doorstep</p>
+                
+                <div class="bg-white rounded-4 p-4 shadow-lg">
+                    <h3 class="text-dark mb-4">Enter your ZIP code to get started</h3>
+                    
+                    <form method="post" id="zipForm">
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-8">
+                                <input 
+                                    type="text" 
+                                    name="zip_code" 
+                                    id="zipInput"
+                                    class="form-control form-control-lg" 
+                                    placeholder="Enter your ZIP code (e.g., 110001)"
+                                    pattern="[0-9]{6}"
+                                    maxlength="6"
+                                    required
+                                    autocomplete="postal-code"
+                                >
+                                <div id="zipHelp" class="form-text"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                    <i class="fas fa-search me-2"></i>Find Stores
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-4 text-center mb-4">
+            <div class="bg-white rounded-3 p-4 shadow-sm h-100">
+                <i class="fas fa-store fa-3x text-primary mb-3"></i>
+                <h5>Multiple Stores</h5>
+                <p class="text-muted">Choose from various local meat and seafood stores in your area.</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="bg-white rounded-3 p-4 shadow-sm h-100">
+                <i class="fas fa-truck fa-3x text-success mb-3"></i>
+                <h5>Fast Delivery</h5>
+                <p class="text-muted">Get your fresh meat and seafood delivered in 30-60 minutes.</p>
+            </div>
+        </div>
+        <div class="col-md-4 text-center mb-4">
+            <div class="bg-white rounded-3 p-4 shadow-sm h-100">
+                <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                <h5>Quality Guaranteed</h5>
+                <p class="text-muted">Fresh, high-quality products with 100% satisfaction guarantee.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const zipInput = document.getElementById('zipInput');
+    const zipHelp = document.getElementById('zipHelp');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('zipForm');
+    
+    let checkTimeout;
+    
+    zipInput.addEventListener('input', function() {
+        const zipCode = this.value.trim();
+        
+        // Clear previous timeout
+        clearTimeout(checkTimeout);
+        zipHelp.textContent = '';
+        
+        if (zipCode.length === 6 && /^\d{6}$/.test(zipCode)) {
+            // Check availability after 500ms delay
+            checkTimeout = setTimeout(() => {
+                checkZipAvailability(zipCode);
+            }, 500);
+        }
+    });
+    
+    function checkZipAvailability(zipCode) {
+        fetch(`/core/check-zip/?zip_code=${zipCode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) {
+                    zipHelp.innerHTML = `<span class="text-success">
+                        <i class="fas fa-check-circle me-1"></i>
+                        ${data.area_name}, ${data.city} - ${data.store_count} stores available
+                    </span>`;
+                } else {
+                    zipHelp.innerHTML = `<span class="text-warning">
+                        <i class="fas fa-exclamation-circle me-1"></i>
+                        ${data.message || 'Area not serviceable yet'}
+                    </span>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking ZIP:', error);
+            });
+    }
+    
+    form.addEventListener('submit', function(e) {
+        const zipCode = zipInput.value.trim();
+        if (zipCode.length !== 6 || !/^\d{6}$/.test(zipCode)) {
+            e.preventDefault();
+            zipHelp.innerHTML = '<span class="text-danger">Please enter a valid 6-digit ZIP code</span>';
+        } else {
+            showLoading(submitBtn);
+        }
+    });
+});
+</script>
+{% endblock %}

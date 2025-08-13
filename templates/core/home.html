@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Stores in {{ zip_area.area_name }} - FreshMeat Market{% endblock %}
+
+{% block content %}
+<div class="bg-primary text-white py-4">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-1">Stores in {{ zip_area.area_name }}</h2>
+                <p class="mb-0 text-light">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    {{ zip_area.city }}, {{ zip_code }}
+                    <span class="ms-3">
+                        <i class="fas fa-store me-1"></i>
+                        {{ stores_data|length }} stores available
+                    </span>
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{% url 'zip_entry' %}" class="btn btn-outline-light">
+                    <i class="fas fa-edit me-1"></i>Change ZIP
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    {% if stores_data %}
+        <div class="row">
+            {% for store_data in stores_data %}
+                <div class="col-lg-6 mb-4">
+                    <div class="store-card card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    {% if store_data.store.logo %}
+                                        <img src="{{ store_data.store.logo.url }}" alt="{{ store_data.store.name }}" 
+                                             class="rounded me-3" width="60" height="60" style="object-fit: cover;">
+                                    {% endif %}
+                                    <div class="d-inline-block">
+                                        <h5 class="card-title mb-1">{{ store_data.store.name }}</h5>
+                                        <small class="text-muted">{{ store_data.store.store_code }}</small>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    {% if store_data.is_open %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-clock me-1"></i>Open
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-clock me-1"></i>Closed
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <p class="card-text text-muted mb-3">{{ store_data.store.description|truncatewords:15 }}</p>
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Delivery Fee</small>
+                                    <strong class="text-primary">₹{{ store_data.delivery_fee }}</strong>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Min Order</small>
+                                    <strong>₹{{ store_data.min_order }}</strong>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Delivery Time</small>
+                                    <strong>{{ store_data.estimated_time }} min</strong>
+                                </div>
+                            </div>
+                            
+                            {% if store_data.store.average_rating > 0 %}
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="text-warning me-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= store_data.store.average_rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <span>{{ store_data.store.average_rating|floatformat:1 }}</span>
+                                        <small class="text-muted ms-1">({{ store_data.store.total_orders }} orders)</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-grid">
+                                {% if store_data.is_open %}
+                                    <a href="{% url 'stores:products' store_data.store.id %}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-shopping-basket me-1"></i>Shop Now
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary" disabled>
+                                        <i class="fas fa-clock me-1"></i>Store Closed
+                                    </button>
+                                {% endif %}
+                            </div>
+                            
+                            {% if not store_data.is_open %}
+                                <small class="text-muted d-block mt-2 text-center">
+                                    Opens at {{ store_data.store.opens_at|time:"g:i A" }}
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        {% if store_data.store.banner_image %}
+                            <div class="card-footer p-0">
+                                <img src="{{ store_data.store.banner_image.url }}" alt="{{ store_data.store.name }} banner" 
+                                     class="img-fluid" style="height: 120px; width: 100%; object-fit: cover;">
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Categories Section -->
+        <div class="mt-5">
+            <h3 class="mb-4">Shop by Category</h3>
+            <div class="row">
+                <div class="col-md-2 col-6 mb-3">
+                    <a href="{% url 'catalog:categories' %}?category=chicken" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-drumstick-bite fa-2x text-warning mb-2"></i>
+                                <h6 class="card-title">Chicken</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <a href="{% url 'catalog:categories' %}?category=mutton" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-bacon fa-2x text-danger mb-2"></i>
+                                <h6 class="card-title">Mutton</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <a href="{% url 'catalog:categories' %}?category=fish" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-fish fa-2x text-info mb-2"></i>
+                                <h6 class="card-title">Fish</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <a href="{% url 'catalog:categories' %}?category=prawns" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-shrimp fa-2x text-pink mb-2"></i>
+                                <h6 class="card-title">Prawns</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <a href="{% url 'catalog:categories' %}?category=marinated" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-pepper-hot fa-2x text-success mb-2"></i>
+                                <h6 class="card-title">Marinated</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <a href="{% url 'catalog:categories' %}" class="text-decoration-none">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="fas fa-th-large fa-2x text-secondary mb-2"></i>
+                                <h6 class="card-title">View All</h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-store-slash fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">No Stores Available</h3>
+            <p class="text-muted mb-4">We're sorry, but there are no stores currently serving {{ zip_code }}.</p>
+            <a href="{% url 'zip_entry' %}" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i>Try Different ZIP Code
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .text-pink {
+        color: #e91e63 !important;
+    }
+    
+    .store-card .card-body {
+        position: relative;
+    }
+    
+    .store-card .badge {
+        font-size: 0.75rem;
+    }
+    
+    .category-card {
+        transition: all 0.3s ease;
+    }
+    
+    .category-card:hover {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
